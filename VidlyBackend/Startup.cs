@@ -10,6 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using VidlyBackend.Models;
+using VidlyBackend.Services;
 
 namespace VidlyBackend
 {
@@ -25,6 +28,13 @@ namespace VidlyBackend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Configure DB
+            services.Configure<VidlyDatabaseSettings>(Configuration.GetSection(nameof(VidlyDatabaseSettings)));
+            services.AddSingleton<IVidlyDatabaseSettings>(sp => sp.GetRequiredService<IOptions<VidlyDatabaseSettings>>().Value);
+
+            // Configure Services
+            services.AddSingleton<MovieService>();
+
             services.AddControllers();
         }
 
