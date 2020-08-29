@@ -14,21 +14,22 @@ namespace VidlyBackend.Controllers
     [Route("api/[controller]")]
     public class MovieController : ControllerBase
     {
-        private readonly MovieService _movieService;
+        private readonly IMongoCRUD<MovieModel> _movieService;
+        private string collectionName = "movies";
 
-        public MovieController(MovieService movieService)
+        public MovieController(IMongoCRUD<MovieModel> movieService)
         {
             _movieService = movieService;
         }
 
         [HttpGet]
         public IEnumerable<MovieModel> Get() =>
-            _movieService.Get();
+            _movieService.Get(collectionName);
 
         [HttpGet("{id:length(24)}", Name = "GetMovie")]
         public ActionResult<IEnumerable<MovieModel>> Get(string id)
         {
-            var movie = _movieService.Get(id);
+            var movie = _movieService.Get(collectionName, ObjectId.Parse(id));
 
             if (movie is null)
                 return NotFound();
@@ -39,31 +40,31 @@ namespace VidlyBackend.Controllers
         [HttpPost]
         public ActionResult<MovieModel> Create(MovieModel movie)
         {
-            _movieService.Create(movie);
+            _movieService.Create(collectionName, movie);
             return CreatedAtRoute("GetMovie", new { id = movie.Id.ToString() }, movie);
         }
 
         [HttpPut("{id:length(24)}")]
         public IActionResult Update(string id, MovieModel movieIn)
         {
-            var movie = _movieService.Get(id);
+            var movie = _movieService.Get(collectionName, ObjectId.Parse(id));
 
             if (movie is null)
                 return NotFound();
 
-            _movieService.Update(id, movieIn);
+            _movieService.Update(collectionName, ObjectId.Parse(id), movieIn);
             return NoContent();
         }
 
         [HttpDelete("{id:length(24)}")]
         public IActionResult Delete(string id)
         {
-            var movie = _movieService.Get(id);
+            var movie = _movieService.Get(collectionName, ObjectId.Parse(id));
 
             if (movie is null)
                 return NotFound();
 
-            _movieService.Remove(id);
+            _movieService.Remove(collectionName, ObjectId.Parse(id));
             return NoContent();
         }
     }

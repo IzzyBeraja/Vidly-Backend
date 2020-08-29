@@ -33,7 +33,9 @@ namespace VidlyBackend
             services.AddSingleton<IVidlyDatabaseSettings>(sp => sp.GetRequiredService<IOptions<VidlyDatabaseSettings>>().Value);
 
             // Configure Services
-            services.AddSingleton<MovieService>();
+            services.AddSingleton<IMongoCRUD<MovieModel>, MongoCRUD<MovieModel>>();
+            services.AddSingleton<IMongoCRUD<GenreModel>, MongoCRUD<GenreModel>>();
+            services.AddSingleton<IMongoCRUD<RentalModel>, MongoCRUD<RentalModel>>();
 
             services.AddControllers();
         }
