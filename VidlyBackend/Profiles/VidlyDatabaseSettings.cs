@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace VidlyBackend.Models
+﻿namespace VidlyBackend.Profiles
 {
     public class VidlyDatabaseSettings : IVidlyDatabaseSettings
     {

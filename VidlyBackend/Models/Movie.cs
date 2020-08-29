@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace VidlyBackend.Models
 {
-    public class MovieModel
+    public class Movie
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

@@ -1,4 +1,4 @@
-﻿namespace VidlyBackend.Models
+﻿namespace VidlyBackend.Profiles
 {
     public interface IVidlyDatabaseSettings
     {
