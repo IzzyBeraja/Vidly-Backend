@@ -1,17 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using VidlyBackend.Models;
+using VidlyBackend.Profiles;
 using VidlyBackend.Services;
 
 namespace VidlyBackend
@@ -25,22 +21,20 @@ namespace VidlyBackend
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Configure DB
             services.Configure<VidlyDatabaseSettings>(Configuration.GetSection(nameof(VidlyDatabaseSettings)));
             services.AddSingleton<IVidlyDatabaseSettings>(sp => sp.GetRequiredService<IOptions<VidlyDatabaseSettings>>().Value);
 
-            // Configure Services
-            services.AddSingleton<IMongoCRUD<MovieModel>, MongoCRUD<MovieModel>>();
-            services.AddSingleton<IMongoCRUD<GenreModel>, MongoCRUD<GenreModel>>();
-            services.AddSingleton<IMongoCRUD<RentalModel>, MongoCRUD<RentalModel>>();
-
             services.AddControllers();
+
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            services.AddSingleton<IDatabaseContext<Movie>, MongoCRUD<Movie>>();
+            services.AddSingleton<IDatabaseContext<Genre>, MongoCRUD<Genre>>();
+            services.AddSingleton<IDatabaseContext<Rental>, MongoCRUD<Rental>>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

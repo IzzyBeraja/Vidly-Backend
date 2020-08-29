@@ -1,14 +1,12 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using VidlyBackend.Models;
+using VidlyBackend.Profiles;
 
 namespace VidlyBackend.Services
 {
-    public class MongoCRUD<T> : IMongoCRUD<T>
+    public class MongoCRUD<T> : IDatabaseContext<T>
     {
         private readonly IMongoDatabase _db;
 
@@ -24,11 +22,11 @@ namespace VidlyBackend.Services
             return collection.Find(new BsonDocument()).ToList();
         }
 
-        public List<T> Get(string collectionName, ObjectId id)
+        public T Get(string collectionName, string id)
         {
             var collection = _db.GetCollection<T>(collectionName);
-            var filter = Builders<T>.Filter.Eq("_id", id);
-            return collection.Find(filter).ToList();
+            var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
+            return collection.Find(filter).FirstOrDefault();
         }
 
         public T Create(string collectionName, T record)
@@ -38,18 +36,18 @@ namespace VidlyBackend.Services
             return record;
         }
 
-        public void Update(string collectionName, ObjectId id, T recordIn)
+        public void Update(string collectionName, string id, T recordIn)
         {
             var collection = _db.GetCollection<T>(collectionName);
-            var filter = Builders<T>.Filter.Eq("_id", id);
+            var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
             collection.ReplaceOne(filter, recordIn);
 
         }
 
-        public void Remove(string collectionName, ObjectId id)
+        public void Remove(string collectionName, string id)
         {
             var collection = _db.GetCollection<T>(collectionName);
-            var filter = Builders<T>.Filter.Eq("_id", id);
+            var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
             collection.DeleteOne(filter);
         }
     }
