@@ -4,6 +4,6 @@
     {
         string ConnectionString { get; set; }
         string DatabaseName { get; set; }
-        string MovieCollectionName { get; set; }
+        string CollectionName { get; set; }
     }
 }

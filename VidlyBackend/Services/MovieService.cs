@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace VidlyBackend.Services
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
 
-            _movies = database.GetCollection<MovieModel>(settings.MovieCollectionName);
+            _movies = database.GetCollection<MovieModel>(settings.CollectionName);
         }
 
         public List<MovieModel> Get() => _movies.Find(movie => true).ToList();
@@ -25,6 +26,9 @@ namespace VidlyBackend.Services
 
         public MovieModel Create(MovieModel movie)
         {
+            if (movie.Id is null)
+                movie.Id = ObjectId.GenerateNewId().ToString();
+
             _movies.InsertOne(movie);
             return movie;
         }
