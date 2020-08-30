@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using VidlyBackend.Dto;
@@ -8,7 +9,7 @@ using VidlyBackend.Services;
 namespace VidlyBackend.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/Movies")]
     public class MoviesController : ControllerBase
     {
         private readonly IDatabaseContext<Movie> _movieService;
@@ -28,8 +29,8 @@ namespace VidlyBackend.Controllers
             return Ok(_mapper.Map<IEnumerable<MovieReadDto>>(movies));
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetMovie")]
-        public ActionResult<MovieReadDto> Get(string id)
+        [HttpGet("{id:length(24)}", Name = "GetMovieById")]
+        public ActionResult<MovieReadDto> GetMovieById(string id)
         {
             var movie = _movieService.Get(collectionName, id);
             
@@ -40,26 +41,32 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Movie> Create(Movie movie)
+        public ActionResult<MovieReadDto> Create(MovieCreateDto movieCreateDto)
         {
+            var movie = _mapper.Map<Movie>(movieCreateDto);
             _movieService.Create(collectionName, movie);
-            return CreatedAtRoute("GetMovie", new { id = movie.Id.ToString() }, movie);
+
+            var movieReadDto = _mapper.Map<MovieReadDto>(movie);
+
+            return CreatedAtRoute(nameof(GetMovieById), new { id = movie.Id.ToString() }, movieReadDto);
         }
 
         [HttpPut("{id:length(24)}")]
-        public ActionResult Update(string id, Movie movieIn)
+        public ActionResult UpdateMovie(string id, MovieUpdateDto movieUpdateDto)
         {
-            var movie = _movieService.Get(collectionName, id);
+            var movieFromRepo = _movieService.Get(collectionName, id);
 
-            if (movie is null)
+            if (movieFromRepo is null)
                 return NotFound();
 
-            _movieService.Update(collectionName, id, movieIn);
+            var movie = _mapper.Map(movieUpdateDto, movieFromRepo);
+
+            _movieService.Update(collectionName, id, movie);
             return NoContent();
         }
 
         [HttpDelete("{id:length(24)}")]
-        public ActionResult Delete(string id)
+        public ActionResult DeleteMovie(string id)
         {
             var movie = _movieService.Get(collectionName, id);
 
