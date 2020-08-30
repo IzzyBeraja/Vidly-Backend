@@ -12,6 +12,7 @@ namespace VidlyBackend.Profiles
             CreateMap<Movie, MovieReadDto>();
             CreateMap<MovieCreateDto, Movie>();
             CreateMap<MovieUpdateDto, Movie>();
+            CreateMap<Movie, MovieUpdateDto>();
             CreateMap<Genre, GenreReadDto>();
             CreateMap<GenreCreateDto, Genre>();
         }

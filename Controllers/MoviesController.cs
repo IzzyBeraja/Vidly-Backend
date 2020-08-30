@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel.DataAnnotations;
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using VidlyBackend.Dto;
 using VidlyBackend.Models;
 using VidlyBackend.Services;
@@ -14,7 +18,7 @@ namespace VidlyBackend.Controllers
     {
         private readonly IDatabaseContext<Movie> _movieService;
         private readonly IMapper _mapper;
-        private string collectionName = "movies";
+        private string collectionName = "movies"; // appSettings
 
         public MoviesController(IDatabaseContext<Movie> movieService, IMapper mapper)
         {
@@ -29,12 +33,10 @@ namespace VidlyBackend.Controllers
             return Ok(_mapper.Map<IEnumerable<MovieReadDto>>(movies));
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetMovieById")]
+        [HttpGet("{id}", Name = "GetMovieById")]
         public ActionResult<MovieReadDto> GetMovieById(string id)
         {
-            var movie = _movieService.Get(collectionName, id);
-            
-            if (movie is null)
+            if (!GetFromDatabase(id, out Movie movie))
                 return NotFound();
 
             return Ok(_mapper.Map<MovieReadDto>(movie));
@@ -51,12 +53,10 @@ namespace VidlyBackend.Controllers
             return CreatedAtRoute(nameof(GetMovieById), new { id = movie.Id.ToString() }, movieReadDto);
         }
 
-        [HttpPut("{id:length(24)}")]
+        [HttpPut("{id}")]
         public ActionResult UpdateMovie(string id, MovieUpdateDto movieUpdateDto)
         {
-            var movieFromRepo = _movieService.Get(collectionName, id);
-
-            if (movieFromRepo is null)
+            if (!GetFromDatabase(id, out Movie movieFromRepo))
                 return NotFound();
 
             var movie = _mapper.Map(movieUpdateDto, movieFromRepo);
@@ -65,16 +65,41 @@ namespace VidlyBackend.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:length(24)}")]
+        [HttpPatch("{id}")]
+        public ActionResult PatchMovie(string id, JsonPatchDocument<MovieUpdateDto> patchDocument)
+        {
+            if (!GetFromDatabase(id, out Movie movieFromRepo))
+                return NotFound();
+
+            var movieToPatch = _mapper.Map<MovieUpdateDto>(movieFromRepo);
+            patchDocument.ApplyTo(movieToPatch, ModelState);
+
+            if (!TryValidateModel(movieToPatch))
+                return ValidationProblem(ModelState);
+
+            var movie = _mapper.Map(movieToPatch, movieFromRepo);
+
+            _movieService.Update(collectionName, id, movie);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
         public ActionResult DeleteMovie(string id)
         {
-            var movie = _movieService.Get(collectionName, id);
-
-            if (movie is null)
+            if (!GetFromDatabase(id, out _))
                 return NotFound();
 
             _movieService.Remove(collectionName, id);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Helper function to get document from collection in database
+        /// </summary>
+        private bool GetFromDatabase(string id, out Movie movie)
+        {
+            movie = _movieService.Get(collectionName, id);
+            return movie != null;
         }
     }
 }

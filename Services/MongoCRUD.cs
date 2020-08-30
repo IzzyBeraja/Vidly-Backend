@@ -25,7 +25,9 @@ namespace VidlyBackend.Services
         public T Get(string collectionName, string id)
         {
             var collection = _db.GetCollection<T>(collectionName);
-            var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
+            if (!ObjectId.TryParse(id, out ObjectId _id))
+                return default;
+            var filter = Builders<T>.Filter.Eq("_id", _id);
             return collection.Find(filter).FirstOrDefault();
         }
 
@@ -36,6 +38,7 @@ namespace VidlyBackend.Services
             return record;
         }
 
+        // No Upsert. Does nothing when id is wrong length
         public void Update(string collectionName, string id, T recordIn)
         {
             var collection = _db.GetCollection<T>(collectionName);
