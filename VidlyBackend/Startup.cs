@@ -23,7 +23,7 @@ namespace VidlyBackend
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<VidlyDatabaseSettings>(Configuration.GetSection(nameof(VidlyDatabaseSettings)));
+            services.Configure<VidlyDatabaseSettings>(Configuration.GetSection("MongoDB"));
             services.AddSingleton<IVidlyDatabaseSettings>(sp => sp.GetRequiredService<IOptions<VidlyDatabaseSettings>>().Value);
 
             services.AddControllers();
