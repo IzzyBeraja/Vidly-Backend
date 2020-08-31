@@ -5,11 +5,14 @@
     <StartupObject>VidlyBackend.Program</StartupObject>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <UserSecretsId>197a18e8-5ffb-4d57-9f7f-d063673cc2c4</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="3.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.7" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.9" />
     <PackageReference Include="MongoDB.Driver" Version="2.11.1" />
   </ItemGroup>
 </Project>

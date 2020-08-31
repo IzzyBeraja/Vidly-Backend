@@ -18,12 +18,17 @@
     },
     "VidlyBackend": {
       "commandName": "Project",
-      "launchBrowser": true,
       "launchUrl": "api/Movie",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://localhost:5001;http://localhost:5000"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/api/Movie",
+      "publishAllPorts": true,
+      "useSSL": true
     }
   }
 }
