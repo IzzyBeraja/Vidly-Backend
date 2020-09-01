@@ -22,12 +22,26 @@ namespace VidlyBackend
 
         public IConfiguration Configuration { get; }
 
+        string MyAllowSpecificOrigins = "MyAllowSpecificOrigins";
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: MyAllowSpecificOrigins,
+                    builder =>
+                    {
+                        builder.WithOrigins("https://localhost")
+                                            .AllowAnyHeader()
+                                            .AllowAnyMethod()
+                                            .AllowAnyOrigin();
+                    });
+            });
+
             services.Configure<VidlyDatabaseSettings>(Configuration.GetSection("MongoDB"));
             services.AddSingleton<IVidlyDatabaseSettings>(sp => sp.GetRequiredService<IOptions<VidlyDatabaseSettings>>().Value);
 
-            services.AddControllers().AddNewtonsoftJson(s => {
+            services.AddControllers().AddNewtonsoftJson(s =>
+            {
                 s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
@@ -48,6 +62,8 @@ namespace VidlyBackend
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseAuthorization();
 
