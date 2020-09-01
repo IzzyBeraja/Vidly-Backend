@@ -9,13 +9,13 @@ namespace VidlyBackend.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("Title")]
         public string Title { get; set; }
 
-        [BsonElement("NumberInStock")]
         public int NumberInStock { get; set; }
 
-        [BsonElement("DailyRentalRate")]
         public int DailyRentalRate { get; set; }
+
+        [BsonElement("Genre")]
+        public Genre genre { get; set; }
     }
 }

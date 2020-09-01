@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using VidlyBackend.Models;
 
 namespace VidlyBackend.Dto
 {
@@ -15,5 +16,8 @@ namespace VidlyBackend.Dto
 
         [Required]
         public int? DailyRentalRate { get; set; }
+
+        [Required]
+        public Genre genre { get; set; }
     }
 }
