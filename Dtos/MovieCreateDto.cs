@@ -4,6 +4,9 @@ namespace VidlyBackend.Dto
 {
     public class MovieCreateDto
     {
+        // Only available because I would like to add specific movies
+        public string Id { get; set; }
+
         [Required]
         public string Title { get; set; }
 
