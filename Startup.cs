@@ -47,9 +47,7 @@ namespace VidlyBackend
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-            services.AddSingleton<IDatabaseContext<Movie>, MongoCRUD<Movie>>();
-            services.AddSingleton<IDatabaseContext<Genre>, MongoCRUD<Genre>>();
-            services.AddSingleton<IDatabaseContext<Rental>, MongoCRUD<Rental>>();
+            services.AddSingleton<IDatabaseContext, MongoCRUD>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

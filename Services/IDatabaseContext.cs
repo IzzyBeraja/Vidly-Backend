@@ -2,12 +2,12 @@
 
 namespace VidlyBackend.Services
 {
-    public interface IDatabaseContext<T>
+    public interface IDatabaseContext
     {
-        T Create(string collectionName, T record);
-        List<T> Get(string collectionName);
-        T Get(string collectionName, string id);
-        void Remove(string collectionName, string id);
-        void Update(string collectionName, string id, T recordIn);
+        T Create<T>(string collectionName, T record);
+        List<T> Get<T>(string collectionName);
+        T Get<T>(string collectionName, string id);
+        void Remove<T>(string collectionName, string id);
+        void Update<T>(string collectionName, string id, T recordIn);
     }
 }

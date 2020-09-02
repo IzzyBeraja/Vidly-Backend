@@ -6,7 +6,7 @@ using VidlyBackend.Profiles;
 
 namespace VidlyBackend.Services
 {
-    public class MongoCRUD<T> : IDatabaseContext<T>
+    public class MongoCRUD : IDatabaseContext
     {
         private readonly IMongoDatabase _db;
 
@@ -16,13 +16,13 @@ namespace VidlyBackend.Services
             _db = client.GetDatabase(settings.DatabaseName);
         }
 
-        public List<T> Get(string collectionName)
+        public List<T> Get<T>(string collectionName)
         {
             var collection = _db.GetCollection<T>(collectionName);
             return collection.Find(new BsonDocument()).ToList();
         }
 
-        public T Get(string collectionName, string id)
+        public T Get<T>(string collectionName, string id)
         {
             var collection = _db.GetCollection<T>(collectionName);
             if (!ObjectId.TryParse(id, out ObjectId _id))
@@ -31,7 +31,7 @@ namespace VidlyBackend.Services
             return collection.Find(filter).FirstOrDefault();
         }
 
-        public T Create(string collectionName, T record)
+        public T Create<T>(string collectionName, T record)
         {
             var collection = _db.GetCollection<T>(collectionName);
             collection.InsertOne(record);
@@ -39,7 +39,7 @@ namespace VidlyBackend.Services
         }
 
         // No Upsert. Does nothing when id is wrong length
-        public void Update(string collectionName, string id, T recordIn)
+        public void Update<T>(string collectionName, string id, T recordIn)
         {
             var collection = _db.GetCollection<T>(collectionName);
             var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
@@ -47,7 +47,7 @@ namespace VidlyBackend.Services
 
         }
 
-        public void Remove(string collectionName, string id)
+        public void Remove<T>(string collectionName, string id)
         {
             var collection = _db.GetCollection<T>(collectionName);
             var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));

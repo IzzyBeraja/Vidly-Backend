@@ -16,20 +16,20 @@ namespace VidlyBackend.Controllers
     [Route("api/Movies")]
     public class MoviesController : ControllerBase
     {
-        private readonly IDatabaseContext<Movie> _movieService;
+        private readonly IDatabaseContext _dbContext;
         private readonly IMapper _mapper;
         private string collectionName = "movies"; // appSettings
 
-        public MoviesController(IDatabaseContext<Movie> movieService, IMapper mapper)
+        public MoviesController(IDatabaseContext dbContext, IMapper mapper)
         {
-            _movieService = movieService;
+            _dbContext = dbContext;
             _mapper = mapper;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<MovieReadDto>> Get()
         {
-            var movies = _movieService.Get(collectionName);
+            var movies = _dbContext.Get<Movie>(collectionName);
             return Ok(_mapper.Map<IEnumerable<MovieReadDto>>(movies));
         }
 
@@ -46,7 +46,7 @@ namespace VidlyBackend.Controllers
         public ActionResult<MovieReadDto> Create(MovieCreateDto movieCreateDto)
         {
             var movie = _mapper.Map<Movie>(movieCreateDto);
-            _movieService.Create(collectionName, movie);
+            _dbContext.Create(collectionName, movie);
 
             var movieReadDto = _mapper.Map<MovieReadDto>(movie);
 
@@ -61,7 +61,7 @@ namespace VidlyBackend.Controllers
 
             var movie = _mapper.Map(movieUpdateDto, movieFromRepo);
 
-            _movieService.Update(collectionName, id, movie);
+            _dbContext.Update(collectionName, id, movie);
             return NoContent();
         }
 
@@ -79,27 +79,27 @@ namespace VidlyBackend.Controllers
 
             var movie = _mapper.Map(movieToPatch, movieFromRepo);
 
-            _movieService.Update(collectionName, id, movie);
+            _dbContext.Update(collectionName, id, movie);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public ActionResult DeleteMovie(string id)
+        public ActionResult DeleteMovie<Movie>(string id)
         {
-            if (!GetFromDatabase(id, out _))
+            if (!GetFromDatabase<Movie>(id, out _))
                 return NotFound();
 
-            _movieService.Remove(collectionName, id);
+            _dbContext.Remove<Movie>(collectionName, id);
             return NoContent();
         }
 
         /// <summary>
         /// Helper function to get document from collection in database
         /// </summary>
-        private bool GetFromDatabase(string id, out Movie movie)
+        private bool GetFromDatabase<T>(string id, out T documentOut)
         {
-            movie = _movieService.Get(collectionName, id);
-            return movie != null;
+            documentOut = _dbContext.Get<T>(collectionName, id);
+            return documentOut != null;
         }
     }
 }
