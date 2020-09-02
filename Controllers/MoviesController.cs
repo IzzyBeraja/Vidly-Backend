@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using VidlyBackend.Dto;
 using VidlyBackend.Models;
 using VidlyBackend.Services;
@@ -18,7 +14,7 @@ namespace VidlyBackend.Controllers
     {
         private readonly IDatabaseContext _dbContext;
         private readonly IMapper _mapper;
-        private string collectionName = "movies"; // appSettings
+        private string _collectionName = "movies"; // appSettings
 
         public MoviesController(IDatabaseContext dbContext, IMapper mapper)
         {
@@ -29,14 +25,14 @@ namespace VidlyBackend.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<MovieReadDto>> Get()
         {
-            var movies = _dbContext.Get<Movie>(collectionName);
+            var movies = _dbContext.Get<Movie>(_collectionName);
             return Ok(_mapper.Map<IEnumerable<MovieReadDto>>(movies));
         }
 
         [HttpGet("{id}", Name = "GetMovieById")]
         public ActionResult<MovieReadDto> GetMovieById(string id)
         {
-            if (!GetFromDatabase(id, out Movie movie))
+            if (!_dbContext.Get(_collectionName, id, out Movie movie))
                 return NotFound();
 
             return Ok(_mapper.Map<MovieReadDto>(movie));
@@ -46,7 +42,7 @@ namespace VidlyBackend.Controllers
         public ActionResult<MovieReadDto> Create(MovieCreateDto movieCreateDto)
         {
             var movie = _mapper.Map<Movie>(movieCreateDto);
-            _dbContext.Create(collectionName, movie);
+            _dbContext.Create(_collectionName, movie);
 
             var movieReadDto = _mapper.Map<MovieReadDto>(movie);
 
@@ -56,19 +52,19 @@ namespace VidlyBackend.Controllers
         [HttpPut("{id}")]
         public ActionResult UpdateMovie(string id, MovieUpdateDto movieUpdateDto)
         {
-            if (!GetFromDatabase(id, out Movie movieFromRepo))
+            if (!_dbContext.Get(_collectionName, id, out Movie movieFromRepo))
                 return NotFound();
 
             var movie = _mapper.Map(movieUpdateDto, movieFromRepo);
 
-            _dbContext.Update(collectionName, id, movie);
+            _dbContext.Update(_collectionName, id, movie);
             return NoContent();
         }
 
         [HttpPatch("{id}")]
         public ActionResult PatchMovie(string id, JsonPatchDocument<MovieUpdateDto> patchDocument)
         {
-            if (!GetFromDatabase(id, out Movie movieFromRepo))
+            if (!_dbContext.Get(_collectionName, id, out Movie movieFromRepo))
                 return NotFound();
 
             var movieToPatch = _mapper.Map<MovieUpdateDto>(movieFromRepo);
@@ -79,27 +75,18 @@ namespace VidlyBackend.Controllers
 
             var movie = _mapper.Map(movieToPatch, movieFromRepo);
 
-            _dbContext.Update(collectionName, id, movie);
+            _dbContext.Update(_collectionName, id, movie);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public ActionResult DeleteMovie<Movie>(string id)
         {
-            if (!GetFromDatabase<Movie>(id, out _))
+            if (!_dbContext.Get<Movie>(_collectionName, id, out _))
                 return NotFound();
 
-            _dbContext.Remove<Movie>(collectionName, id);
+            _dbContext.Remove<Movie>(_collectionName, id);
             return NoContent();
-        }
-
-        /// <summary>
-        /// Helper function to get document from collection in database
-        /// </summary>
-        private bool GetFromDatabase<T>(string id, out T documentOut)
-        {
-            documentOut = _dbContext.Get<T>(collectionName, id);
-            return documentOut != null;
         }
     }
 }

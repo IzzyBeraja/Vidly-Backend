@@ -2,7 +2,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 using VidlyBackend.Dto;
 using VidlyBackend.Models;
 using VidlyBackend.Services;
@@ -15,7 +14,7 @@ namespace VidlyBackend.Controllers
     {
         private readonly IDatabaseContext _dbContext;
         private readonly IMapper _mapper;
-        private string collectionName = "genres";
+        private string _collectionName = "genres";
 
         public GenresController(IDatabaseContext dbContext, IMapper mapper)
         {
@@ -26,14 +25,14 @@ namespace VidlyBackend.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<GenreReadDto>> Get()
         {
-            var genres = _dbContext.Get<Genre>(collectionName);
+            var genres = _dbContext.Get<Genre>(_collectionName);
             return Ok(_mapper.Map<IEnumerable<GenreReadDto>>(genres));
         }
 
         [HttpGet("{id}", Name = "GetGenreById")]
         public ActionResult<GenreReadDto> GetGenreById(string id)
         {
-            if (!GetFromDatabase(id, out Genre genre))
+            if (!_dbContext.Get(_collectionName, id, out Genre genre))
                 return NotFound();
 
             return Ok(_mapper.Map<GenreReadDto>(genre));
@@ -43,7 +42,7 @@ namespace VidlyBackend.Controllers
         public ActionResult<GenreReadDto> Create(GenreCreateDto genreCreateDto)
         {
             var genre = _mapper.Map<Genre>(genreCreateDto);
-            _dbContext.Create(collectionName, genre);
+            _dbContext.Create(_collectionName, genre);
 
             var genreReadDto = _mapper.Map<GenreReadDto>(genre);
             return CreatedAtRoute(nameof(GetGenreById), new { id = genre.Id.ToString() }, genreReadDto);
@@ -52,19 +51,19 @@ namespace VidlyBackend.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdateGenre(string id, GenreUpdateDto genreUpdateDto)
         {
-            if (!GetFromDatabase(id, out Genre genreFromRepo))
+            if (!_dbContext.Get(_collectionName, id, out Genre genreFromRepo))
                 return NotFound();
 
             var genre = _mapper.Map(genreUpdateDto, genreFromRepo);
 
-            _dbContext.Update(collectionName, id, genre);
+            _dbContext.Update(_collectionName, id, genre);
             return NoContent();
         }
 
         [HttpPatch("{id}")]
         public ActionResult PatchGenre(string id, JsonPatchDocument<GenreUpdateDto> patchDocument)
         {
-            if (!GetFromDatabase(id, out Genre genreFromRepo))
+            if (!_dbContext.Get(_collectionName, id, out Genre genreFromRepo))
                 return NotFound();
 
             var genreToPatch = _mapper.Map<GenreUpdateDto>(genreFromRepo);
@@ -75,29 +74,18 @@ namespace VidlyBackend.Controllers
 
             var genre = _mapper.Map(genreToPatch, genreFromRepo);
 
-            _dbContext.Update(collectionName, id, genre);
+            _dbContext.Update(_collectionName, id, genre);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public IActionResult DeleteGenre(string id)
         {
-            var genre = _dbContext.Get<Genre>(collectionName, id);
-
-            if (genre is null)
+            if (!_dbContext.Get<Genre>(_collectionName, id, out _))
                 return NotFound();
 
-            _dbContext.Remove<Genre>(collectionName, id);
+            _dbContext.Remove<Genre>(_collectionName, id);
             return NoContent();
-        }
-
-        /// <summary>
-        /// Helper function to get document from collection in database
-        /// </summary>
-        private bool GetFromDatabase<T>(string id, out T documentOut)
-        {
-            documentOut = _dbContext.Get<T>(collectionName, id);
-            return documentOut != null;
         }
     }
 }

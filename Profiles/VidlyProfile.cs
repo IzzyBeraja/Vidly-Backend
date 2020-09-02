@@ -9,14 +9,19 @@ namespace VidlyBackend.Profiles
         public VidlyProfile()
         {
             // Source -> Destination
+            // Movies
             CreateMap<Movie, MovieReadDto>();
             CreateMap<MovieCreateDto, Movie>();
             CreateMap<MovieUpdateDto, Movie>();
             CreateMap<Movie, MovieUpdateDto>();
+            // Genres
             CreateMap<Genre, GenreReadDto>();
             CreateMap<GenreCreateDto, Genre>();
             CreateMap<GenreUpdateDto, Genre>();
             CreateMap<Genre, GenreUpdateDto>();
+            // Users
+            CreateMap<User, UserReadDto>();
+            CreateMap<UserCreateDto, User>();
         }
     }
 }
