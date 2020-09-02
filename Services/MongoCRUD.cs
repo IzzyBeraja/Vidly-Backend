@@ -37,6 +37,14 @@ namespace VidlyBackend.Services
             return documentOut != null;
         }
 
+        public T Get<T>(string collectionName, string fieldName, string searchValue)
+        {
+            var collection = _db.GetCollection<T>(collectionName);
+            var filter = Builders<T>.Filter.Eq(fieldName, searchValue);
+            return collection.Find(filter).FirstOrDefault();
+        }
+
+
         public T Create<T>(string collectionName, T record)
         {
             var collection = _db.GetCollection<T>(collectionName);

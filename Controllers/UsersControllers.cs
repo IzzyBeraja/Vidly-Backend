@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using VidlyBackend.Dto;
 using VidlyBackend.Models;
 using VidlyBackend.Services;
+using BCrypt.Net;
 
 namespace VidlyBackend.Controllers
 {
@@ -45,11 +46,15 @@ namespace VidlyBackend.Controllers
         [HttpPost]
         public ActionResult<UserReadDto> Create(UserCreateDto userCreateDto)
         {
+            var userFromRepo = _dbContext.Get<User>(_collectionName, nameof(VidlyBackend.Models.User.Email), userCreateDto.Email);
+            if (userFromRepo != null)
+                return BadRequest("User is already registered.");
+
             var user = _mapper.Map<User>(userCreateDto);
+            user.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(user.Password, HashType.SHA384);
             _dbContext.Create(_collectionName, user);
 
             var userReadDto = _mapper.Map<UserReadDto>(user);
-
             return CreatedAtRoute(nameof(GetUserById), new { id = user.Id.ToString() }, userReadDto);
         }
 
