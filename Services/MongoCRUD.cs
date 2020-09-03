@@ -37,10 +37,10 @@ namespace VidlyBackend.Services
             return documentOut != null;
         }
 
-        public T Get<T>(string collectionName, string fieldName, string searchValue)
+        public T Get<T>(string collectionName, string fieldName, string searchValue, bool caseSensitive)
         {
             var collection = _db.GetCollection<T>(collectionName);
-            var filter = Builders<T>.Filter.Eq(fieldName, searchValue);
+            var filter = Builders<T>.Filter.Regex(fieldName, new BsonRegularExpression(searchValue, !caseSensitive ? "i" : ""));
             return collection.Find(filter).FirstOrDefault();
         }
 
