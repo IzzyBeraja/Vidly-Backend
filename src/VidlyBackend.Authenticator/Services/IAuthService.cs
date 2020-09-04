@@ -6,10 +6,8 @@ namespace VidlyBackend.Authentication.Services
 {
     public interface IAuthService
     {
-        string SecretKey { get; set; }
-
-        bool IsTokenValid(string token);
-        string GenerateToken(IAuthContainerModel model);
+        bool TryGetTokenClaims(string token, out IEnumerable<Claim> claims);
+        string GenerateToken(IEnumerable<Claim> claims);
         IEnumerable<Claim> GetTokenClaims(string token);
     }
 }

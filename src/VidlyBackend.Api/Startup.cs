@@ -9,6 +9,8 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using DataManager.Services;
 using DataManager.Profiles;
+using VidlyBackend.Authentication.Models;
+using VidlyBackend.Authentication.Services;
 
 namespace VidlyBackend
 {
@@ -39,6 +41,9 @@ namespace VidlyBackend
             services.Configure<DatabaseSettings>(Configuration.GetSection("MongoDB"));
             services.AddSingleton<IDatabaseSettings>(sp => sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
 
+            services.Configure<JWTContainerSettings>(Configuration.GetSection("JWT"));
+            services.AddSingleton<IAuthContainerSettings>(sp => sp.GetRequiredService<IOptions<JWTContainerSettings>>().Value);
+
             services.AddControllers().AddNewtonsoftJson(s =>
             {
                 s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -47,6 +52,7 @@ namespace VidlyBackend
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddSingleton<IDatabaseContext, MongoCRUD>();
+            services.AddSingleton<IAuthService, JWTService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

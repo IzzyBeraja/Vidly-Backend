@@ -6,6 +6,8 @@ using VidlyBackend.Models;
 using BCrypt.Net;
 using DataManager.Services;
 using System.Threading.Tasks;
+using VidlyBackend.Authentication.Services;
+using System.Security.Claims;
 
 namespace VidlyBackend.Controllers
 {
@@ -17,11 +19,13 @@ namespace VidlyBackend.Controllers
         private readonly IMapper _mapper;
         private string _collectionName = "users";
         private HashType _hashType = HashType.SHA384;
+        private readonly IAuthService _auth;
 
-        public UsersController(IDatabaseContext dbContext, IMapper mapper)
+        public UsersController(IDatabaseContext dbContext, IMapper mapper, IAuthService auth)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _auth = auth;
         }
 
         [HttpGet]
@@ -64,8 +68,9 @@ namespace VidlyBackend.Controllers
             if (userFromRepo is null || !BCrypt.Net.BCrypt.EnhancedVerify(userAuthDto.Password, userFromRepo.Password, _hashType))
                 return BadRequest("Incorrect authentication credentials.");
 
-            // Works but needs to generate a JWT
-            return Ok("Nice");
+            List<Claim> claims = new List<Claim>() { new Claim(ClaimTypes.Name, userAuthDto.Email) };
+            var token = _auth.GenerateToken(claims);
+            return Ok(token);
         }
 
         [HttpDelete("{id}")]

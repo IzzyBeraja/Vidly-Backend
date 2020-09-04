@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using VidlyBackend.Authentication.Models;
 
 namespace VidlyBackend.Authentication.Services
@@ -12,32 +14,32 @@ namespace VidlyBackend.Authentication.Services
         /// <summary>
         /// The secret key used to encrypt this token.
         /// </summary>
-        public string SecretKey { get; set; }
+        private IAuthContainerSettings _settings { get; set; }
 
-        public JWTService(string secretKey)
+        public JWTService(IAuthContainerSettings authContainerModel)
         {
-            SecretKey = secretKey;
+            _settings = authContainerModel;
         }
 
         /// <summary>
         /// Generates an encrypted token with the given model.
         /// </summary>
         /// <param name="model"></param>
-        public string GenerateToken(IAuthContainerModel model)
+        public string GenerateToken(IEnumerable<Claim> claims)
         {
-            if (model is null || model.Claims is null || model.Claims.Length == 0)
+            if (claims is null || claims.Count() == 0)
                 throw new ArgumentException("Provided arguments for token creation are invalid.");
 
-            SecurityTokenDescriptor securityTokenDescriptor = new SecurityTokenDescriptor
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(model.Claims),
-                Expires = DateTime.UtcNow.AddMinutes(model.ExpireMinutes),
-                SigningCredentials = new SigningCredentials(GetSymmetricSecurityKey(), model.SecurityAlgorithm)
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(_settings.ExpireMinutes),
+                SigningCredentials = new SigningCredentials(GetSecurityKey(_settings.SecretKey), _settings.SecurityAlgorithm)
             };
 
-            JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-            SecurityToken securityToken = jwtSecurityTokenHandler.CreateToken(securityTokenDescriptor);
-            return jwtSecurityTokenHandler.WriteToken(securityToken);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
         /// <summary>
@@ -50,50 +52,42 @@ namespace VidlyBackend.Authentication.Services
             if (string.IsNullOrEmpty(token))
                 throw new ArgumentException("Provided token is null or empty.");
 
-            TokenValidationParameters tokenValidationParameters = GetTokenValidationParameters();
-
-            JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+            var tokenParams = GetTokenValidationParameters();
+            var tokenHandler = new JwtSecurityTokenHandler();
 
             try
             {
-                ClaimsPrincipal tokenValid = jwtSecurityTokenHandler.ValidateToken(token, tokenValidationParameters, out _);
+                ClaimsPrincipal tokenValid = tokenHandler.ValidateToken(token, tokenParams, out _);
                 return tokenValid.Claims;
             }
-            catch
-            {
-                throw;
-            }
+            catch { throw; }
         }
 
         /// <summary>
-        /// Performs validation on a given token returning true when valid and false when it is not.
+        /// Tries to validate a token. If it is not a valid token, it returns false.
         /// </summary>
         /// <param name="token"></param>
-        public bool IsTokenValid(string token)
+        public bool TryGetTokenClaims(string token, out IEnumerable<Claim> claims)
         {
             if (string.IsNullOrEmpty(token))
-                throw new ArgumentException("Token provided is null or empty.");
-
-            TokenValidationParameters tokenValidationParameters = GetTokenValidationParameters();
-
-            JwtSecurityTokenHandler jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-
-            ClaimsPrincipal tokenValid;
-            try
             {
-                tokenValid = jwtSecurityTokenHandler.ValidateToken(token, tokenValidationParameters, out _);
+                claims = null;
+                return false;
             }
-            catch
-            {
-                tokenValid = null;
-            }
-            return tokenValid != null;
+
+            var tokenParams = GetTokenValidationParameters();
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            try { claims = tokenHandler.ValidateToken(token, tokenParams, out _).Claims; }
+            catch { claims = null; }
+
+            return claims != null;
         }
 
-        private SecurityKey GetSymmetricSecurityKey()
+        public SymmetricSecurityKey GetSecurityKey(string key)
         {
-            byte[] symmetricKey = Convert.FromBase64String(SecretKey);
-            return new SymmetricSecurityKey(symmetricKey);
+            var keyData = Encoding.UTF8.GetBytes(key);
+            return new SymmetricSecurityKey(keyData);
         }
 
         private TokenValidationParameters GetTokenValidationParameters()
@@ -102,7 +96,7 @@ namespace VidlyBackend.Authentication.Services
             {
                 ValidateIssuer = false,
                 ValidateAudience = false,
-                IssuerSigningKey = GetSymmetricSecurityKey()
+                IssuerSigningKey = GetSecurityKey(_settings.SecretKey)
             };
         }
     }
