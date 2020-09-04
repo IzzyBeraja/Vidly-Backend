@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoMapper;
 using DataManager.Services;
 using Microsoft.AspNetCore.JsonPatch;
@@ -23,47 +24,50 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<GenreReadDto>> Get()
+        public async Task<ActionResult<IEnumerable<GenreReadDto>>> Get()
         {
-            var genres = _dbContext.Get<Genre>(_collectionName);
+            var genres = await _dbContext.GetAsync<Genre>(_collectionName);
             return Ok(_mapper.Map<IEnumerable<GenreReadDto>>(genres));
         }
 
         [HttpGet("{id}", Name = "GetGenreById")]
-        public ActionResult<GenreReadDto> GetGenreById(string id)
+        public async Task<ActionResult<GenreReadDto>> GetGenreById(string id)
         {
-            if (!_dbContext.Get(_collectionName, id, out Genre genre))
+            var genre = await _dbContext.GetAsync<Genre>(_collectionName, id);
+            if (genre is null)
                 return NotFound();
 
             return Ok(_mapper.Map<GenreReadDto>(genre));
         }
 
         [HttpPost]
-        public ActionResult<GenreReadDto> Create(GenreCreateDto genreCreateDto)
+        public async Task<ActionResult<GenreReadDto>> Create(GenreCreateDto genreCreateDto)
         {
             var genre = _mapper.Map<Genre>(genreCreateDto);
-            _dbContext.Create(_collectionName, genre);
+            await _dbContext.CreateAsync(_collectionName, genre);
 
             var genreReadDto = _mapper.Map<GenreReadDto>(genre);
             return CreatedAtRoute(nameof(GetGenreById), new { id = genre.Id.ToString() }, genreReadDto);
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateGenre(string id, GenreUpdateDto genreUpdateDto)
+        public async Task<ActionResult> UpdateGenre(string id, GenreUpdateDto genreUpdateDto)
         {
-            if (!_dbContext.Get(_collectionName, id, out Genre genreFromRepo))
+            var genreFromRepo = await _dbContext.GetAsync<Genre>(_collectionName, id);
+            if (genreFromRepo is null)
                 return NotFound();
 
             var genre = _mapper.Map(genreUpdateDto, genreFromRepo);
 
-            _dbContext.Update(_collectionName, id, genre);
+            await _dbContext.UpdateAsync(_collectionName, id, genre);
             return NoContent();
         }
 
         [HttpPatch("{id}")]
-        public ActionResult PatchGenre(string id, JsonPatchDocument<GenreUpdateDto> patchDocument)
+        public async Task<ActionResult> PatchGenre(string id, JsonPatchDocument<GenreUpdateDto> patchDocument)
         {
-            if (!_dbContext.Get(_collectionName, id, out Genre genreFromRepo))
+            var genreFromRepo = await _dbContext.GetAsync<Genre>(_collectionName, id);
+            if (genreFromRepo is null)
                 return NotFound();
 
             var genreToPatch = _mapper.Map<GenreUpdateDto>(genreFromRepo);
@@ -74,17 +78,18 @@ namespace VidlyBackend.Controllers
 
             var genre = _mapper.Map(genreToPatch, genreFromRepo);
 
-            _dbContext.Update(_collectionName, id, genre);
+            await _dbContext.UpdateAsync(_collectionName, id, genre);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteGenre(string id)
+        public async Task<ActionResult> DeleteGenre(string id)
         {
-            if (!_dbContext.Get<Genre>(_collectionName, id, out _))
+            var genreFromRepo = await _dbContext.GetAsync<Genre>(_collectionName, id);
+            if (genreFromRepo is null)
                 return NotFound();
 
-            _dbContext.Remove<Genre>(_collectionName, id);
+            await _dbContext.RemoveAsync<Genre>(_collectionName, id);
             return NoContent();
         }
     }

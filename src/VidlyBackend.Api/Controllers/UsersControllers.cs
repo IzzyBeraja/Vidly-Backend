@@ -5,6 +5,7 @@ using VidlyBackend.Dto;
 using VidlyBackend.Models;
 using BCrypt.Net;
 using DataManager.Services;
+using System.Threading.Tasks;
 
 namespace VidlyBackend.Controllers
 {
@@ -24,31 +25,32 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<UserReadDto>> Get()
+        public async Task<ActionResult<IEnumerable<UserReadDto>>> Get()
         {
-            var users = _dbContext.Get<User>(_collectionName);
+            var users = await _dbContext.GetAsync<User>(_collectionName);
             return Ok(_mapper.Map<IEnumerable<UserReadDto>>(users));
         }
 
         [HttpGet("{id}", Name = "GetUserById")]
-        public ActionResult<UserReadDto> GetUserById(string id)
+        public async Task<ActionResult<UserReadDto>> GetUserById(string id)
         {
-            if (!_dbContext.Get(_collectionName, id, out User user))
+            var user = await _dbContext.GetAsync<User>(_collectionName, id);
+            if (user is null)
                 return NotFound();
 
             return Ok(_mapper.Map<UserReadDto>(user));
         }
 
         [HttpPost]
-        public ActionResult<UserReadDto> CreateUser(UserCreateDto userCreateDto)
+        public async Task<ActionResult<UserReadDto>> CreateUser(UserCreateDto userCreateDto)
         {
-            var userFromRepo = _dbContext.Get<User>(_collectionName, nameof(VidlyBackend.Models.User.Email), userCreateDto.Email);
+            var userFromRepo = await _dbContext.GetAsync<User>(_collectionName, nameof(Models.User.Email), userCreateDto.Email);
             if (userFromRepo != null)
                 return BadRequest("User is already registered.");
 
             var user = _mapper.Map<User>(userCreateDto);
             user.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(user.Password, _hashType);
-            _dbContext.Create(_collectionName, user);
+            await _dbContext.CreateAsync(_collectionName, user);
 
             var userReadDto = _mapper.Map<UserReadDto>(user);
             return CreatedAtRoute(nameof(GetUserById), new { id = user.Id.ToString() }, userReadDto);
@@ -56,9 +58,9 @@ namespace VidlyBackend.Controllers
 
         [Route("~/api/Auth")]
         [HttpPost]
-        public ActionResult<UserReadDto> AuthorizeUser(UserAuthDto userAuthDto)
+        public async Task<ActionResult<UserReadDto>> AuthorizeUser(UserAuthDto userAuthDto)
         {
-            var userFromRepo = _dbContext.Get<User>(_collectionName, nameof(VidlyBackend.Models.User.Email), userAuthDto.Email);
+            var userFromRepo = await _dbContext.GetAsync<User>(_collectionName, nameof(Models.User.Email), userAuthDto.Email);
             if (userFromRepo is null || !BCrypt.Net.BCrypt.EnhancedVerify(userAuthDto.Password, userFromRepo.Password, _hashType))
                 return BadRequest("Incorrect authentication credentials.");
 
@@ -66,43 +68,14 @@ namespace VidlyBackend.Controllers
             return Ok("Nice");
         }
 
-        // [HttpPut("{id}")]
-        // public ActionResult UpdateUser(string id, UserUpdateDto userUpdateDto)
-        // {
-        //     if (!GetFromDatabase(id, out User userFromRepo))
-        //         return NotFound();
-
-        //     var user = _mapper.Map(userUpdateDto, userFromRepo);
-
-        //     _dbContext.Update(collectionName, id, user);
-        //     return NoContent();
-        // }
-
-        // [HttpPatch("{id}")]
-        // public ActionResult PatchUser(string id, JsonPatchDocument<UserUpdateDto> patchDocument)
-        // {
-        //     if (!GetFromDatabase(id, out User userFromRepo))
-        //         return NotFound();
-
-        //     var userToPatch = _mapper.Map<UserUpdateDto>(userFromRepo);
-        //     patchDocument.ApplyTo(userToPatch, ModelState);
-
-        //     if (!TryValidateModel(userToPatch))
-        //         return ValidationProblem(ModelState);
-
-        //     var user = _mapper.Map(userToPatch, userFromRepo);
-
-        //     _dbContext.Update(collectionName, id, user);
-        //     return NoContent();
-        // }
-
         [HttpDelete("{id}")]
-        public ActionResult DeleteUser<User>(string id)
+        public async Task<ActionResult> DeleteUser<User>(string id)
         {
-            if (!_dbContext.Get<User>(_collectionName, id, out _))
+            var user = await _dbContext.GetAsync<User>(_collectionName, id);
+            if (user is null)
                 return NotFound();
 
-            _dbContext.Remove<User>(_collectionName, id);
+            await _dbContext.RemoveAsync<User>(_collectionName, id);
             return NoContent();
         }
     }

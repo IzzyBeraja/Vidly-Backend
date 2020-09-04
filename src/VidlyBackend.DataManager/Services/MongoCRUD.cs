@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
 using DataManager.Profiles;
+using System.Threading.Tasks;
 
 namespace DataManager.Services
 {
@@ -22,6 +23,11 @@ namespace DataManager.Services
             return collection.Find(new BsonDocument()).ToList();
         }
 
+        public async Task<List<T>> GetAsync<T>(string collectionName)
+        {
+            return await Task.Run(() => { return Get<T>(collectionName); });
+        }
+
         public T Get<T>(string collectionName, string id)
         {
             var collection = _db.GetCollection<T>(collectionName);
@@ -29,6 +35,15 @@ namespace DataManager.Services
                 return default;
             var filter = Builders<T>.Filter.Eq("_id", _id);
             return collection.Find(filter).FirstOrDefault();
+        }
+
+        public async Task<T> GetAsync<T>(string collectionName, string id)
+        {
+            var collection = _db.GetCollection<T>(collectionName);
+            if (!ObjectId.TryParse(id, out ObjectId _id))
+                return default;
+            var filter = Builders<T>.Filter.Eq("_id", _id);
+            return await collection.Find(filter).FirstOrDefaultAsync();
         }
 
         public bool Get<T>(string collectionName, string id, out T documentOut)
@@ -44,11 +59,24 @@ namespace DataManager.Services
             return collection.Find(filter).FirstOrDefault();
         }
 
+        public async Task<T> GetAsync<T>(string collectionName, string fieldName, string searchValue, bool caseSensitive)
+        {
+            var collection = _db.GetCollection<T>(collectionName);
+            var filter = Builders<T>.Filter.Regex(fieldName, new BsonRegularExpression(searchValue, !caseSensitive ? "i" : ""));
+            return await collection.Find(filter).FirstOrDefaultAsync();
+        }
 
         public T Create<T>(string collectionName, T record)
         {
             var collection = _db.GetCollection<T>(collectionName);
             collection.InsertOne(record);
+            return record;
+        }
+
+        public async Task<T> CreateAsync<T>(string collectionName, T record)
+        {
+            var collection = _db.GetCollection<T>(collectionName);
+            await collection.InsertOneAsync(record);
             return record;
         }
 
@@ -58,7 +86,13 @@ namespace DataManager.Services
             var collection = _db.GetCollection<T>(collectionName);
             var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
             collection.ReplaceOne(filter, recordIn);
+        }
 
+        public async Task UpdateAsync<T>(string collectionName, string id, T recordIn)
+        {
+            var collection = _db.GetCollection<T>(collectionName);
+            var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
+            await collection.ReplaceOneAsync(filter, recordIn);
         }
 
         public void Remove<T>(string collectionName, string id)
@@ -66,6 +100,13 @@ namespace DataManager.Services
             var collection = _db.GetCollection<T>(collectionName);
             var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
             collection.DeleteOne(filter);
+        }
+
+        public async Task RemoveAsync<T>(string collectionName, string id)
+        {
+            var collection = _db.GetCollection<T>(collectionName);
+            var filter = Builders<T>.Filter.Eq("_id", ObjectId.Parse(id));
+            await collection.DeleteOneAsync(filter);
         }
     }
 }

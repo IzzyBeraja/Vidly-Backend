@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoMapper;
 using DataManager.Services;
 using Microsoft.AspNetCore.JsonPatch;
@@ -23,26 +24,27 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<MovieReadDto>> Get()
+        public async Task<ActionResult<IEnumerable<MovieReadDto>>> Get()
         {
-            var movies = _dbContext.Get<Movie>(_collectionName);
+            var movies = await _dbContext.GetAsync<Movie>(_collectionName);
             return Ok(_mapper.Map<IEnumerable<MovieReadDto>>(movies));
         }
 
         [HttpGet("{id}", Name = "GetMovieById")]
-        public ActionResult<MovieReadDto> GetMovieById(string id)
+        public async Task<ActionResult<MovieReadDto>> GetMovieById(string id)
         {
-            if (!_dbContext.Get(_collectionName, id, out Movie movie))
+            var movie = await _dbContext.GetAsync<Movie>(_collectionName, id);
+            if (movie is null)
                 return NotFound();
 
             return Ok(_mapper.Map<MovieReadDto>(movie));
         }
 
         [HttpPost]
-        public ActionResult<MovieReadDto> Create(MovieCreateDto movieCreateDto)
+        public async Task<ActionResult<MovieReadDto>> Create(MovieCreateDto movieCreateDto)
         {
             var movie = _mapper.Map<Movie>(movieCreateDto);
-            _dbContext.Create(_collectionName, movie);
+            await _dbContext.CreateAsync(_collectionName, movie);
 
             var movieReadDto = _mapper.Map<MovieReadDto>(movie);
 
@@ -50,21 +52,23 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult UpdateMovie(string id, MovieUpdateDto movieUpdateDto)
+        public async Task<ActionResult> UpdateMovie(string id, MovieUpdateDto movieUpdateDto)
         {
-            if (!_dbContext.Get(_collectionName, id, out Movie movieFromRepo))
+            var movieFromRepo = await _dbContext.GetAsync<Movie>(_collectionName, id);
+            if (movieFromRepo is null)
                 return NotFound();
 
             var movie = _mapper.Map(movieUpdateDto, movieFromRepo);
 
-            _dbContext.Update(_collectionName, id, movie);
+            await _dbContext.UpdateAsync(_collectionName, id, movie);
             return NoContent();
         }
 
         [HttpPatch("{id}")]
-        public ActionResult PatchMovie(string id, JsonPatchDocument<MovieUpdateDto> patchDocument)
+        public async Task<ActionResult> PatchMovie(string id, JsonPatchDocument<MovieUpdateDto> patchDocument)
         {
-            if (!_dbContext.Get(_collectionName, id, out Movie movieFromRepo))
+            var movieFromRepo = await _dbContext.GetAsync<Movie>(_collectionName, id);
+            if (movieFromRepo is null)
                 return NotFound();
 
             var movieToPatch = _mapper.Map<MovieUpdateDto>(movieFromRepo);
@@ -75,17 +79,18 @@ namespace VidlyBackend.Controllers
 
             var movie = _mapper.Map(movieToPatch, movieFromRepo);
 
-            _dbContext.Update(_collectionName, id, movie);
+            await _dbContext.UpdateAsync(_collectionName, id, movie);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public ActionResult DeleteMovie<Movie>(string id)
+        public async Task<ActionResult> DeleteMovie<Movie>(string id)
         {
-            if (!_dbContext.Get<Movie>(_collectionName, id, out _))
+            var movieFromRepo = await _dbContext.GetAsync<Movie>(_collectionName, id);
+            if (movieFromRepo is null)
                 return NotFound();
 
-            _dbContext.Remove<Movie>(_collectionName, id);
+            await _dbContext.RemoveAsync<Movie>(_collectionName, id);
             return NoContent();
         }
     }
