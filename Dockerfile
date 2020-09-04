@@ -7,7 +7,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["src/VidlyBackend.Api/VidlyBackend.csproj", "src/VidlyBackend.Api/"]
 COPY ["src/VidlyBackend.DataManager/DataManager.csproj", "src/VidlyBackend.DataManager/"]
-COPY ["src/VidlyBackend.Authentication/Authentication.csproj", "src/VidlyBackend.Authentication/"]
+COPY ["src/VidlyBackend.Authenticator/Authenticator.csproj", "src/VidlyBackend.Authenticator/"]
 RUN dotnet restore "src/VidlyBackend.Api/VidlyBackend.csproj"
 COPY . .
 WORKDIR "/src/src/VidlyBackend.Api"
