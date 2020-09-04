@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace VidlyBackend.Services
+namespace DataManager.Services
 {
     public interface IDatabaseContext
     {

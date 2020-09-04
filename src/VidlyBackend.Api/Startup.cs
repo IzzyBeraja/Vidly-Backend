@@ -6,9 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using VidlyBackend.Profiles;
-using VidlyBackend.Services;
 using Newtonsoft.Json.Serialization;
+using DataManager.Services;
+using DataManager.Profiles;
 
 namespace VidlyBackend
 {
@@ -36,8 +36,8 @@ namespace VidlyBackend
                     });
             });
 
-            services.Configure<VidlyDatabaseSettings>(Configuration.GetSection("MongoDB"));
-            services.AddSingleton<IVidlyDatabaseSettings>(sp => sp.GetRequiredService<IOptions<VidlyDatabaseSettings>>().Value);
+            services.Configure<DatabaseSettings>(Configuration.GetSection("MongoDB"));
+            services.AddSingleton<IDatabaseSettings>(sp => sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
 
             services.AddControllers().AddNewtonsoftJson(s =>
             {

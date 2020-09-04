@@ -1,15 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel.DataAnnotations;
 using AutoMapper;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 using VidlyBackend.Dto;
 using VidlyBackend.Models;
-using VidlyBackend.Services;
 using BCrypt.Net;
+using DataManager.Services;
 
 namespace VidlyBackend.Controllers
 {
@@ -20,6 +15,7 @@ namespace VidlyBackend.Controllers
         private readonly IDatabaseContext _dbContext;
         private readonly IMapper _mapper;
         private string _collectionName = "users";
+        private HashType _hashType = HashType.SHA384;
 
         public UsersController(IDatabaseContext dbContext, IMapper mapper)
         {
@@ -44,18 +40,30 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpPost]
-        public ActionResult<UserReadDto> Create(UserCreateDto userCreateDto)
+        public ActionResult<UserReadDto> CreateUser(UserCreateDto userCreateDto)
         {
             var userFromRepo = _dbContext.Get<User>(_collectionName, nameof(VidlyBackend.Models.User.Email), userCreateDto.Email);
             if (userFromRepo != null)
                 return BadRequest("User is already registered.");
 
             var user = _mapper.Map<User>(userCreateDto);
-            user.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(user.Password, HashType.SHA384);
+            user.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(user.Password, _hashType);
             _dbContext.Create(_collectionName, user);
 
             var userReadDto = _mapper.Map<UserReadDto>(user);
             return CreatedAtRoute(nameof(GetUserById), new { id = user.Id.ToString() }, userReadDto);
+        }
+
+        [Route("~/api/Auth")]
+        [HttpPost]
+        public ActionResult<UserReadDto> AuthorizeUser(UserAuthDto userAuthDto)
+        {
+            var userFromRepo = _dbContext.Get<User>(_collectionName, nameof(VidlyBackend.Models.User.Email), userAuthDto.Email);
+            if (userFromRepo is null || !BCrypt.Net.BCrypt.EnhancedVerify(userAuthDto.Password, userFromRepo.Password, _hashType))
+                return BadRequest("Incorrect authentication credentials.");
+
+            // Works but needs to generate a JWT
+            return Ok("Nice");
         }
 
         // [HttpPut("{id}")]

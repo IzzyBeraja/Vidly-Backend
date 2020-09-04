@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using AutoMapper;
+using DataManager.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using VidlyBackend.Dto;
 using VidlyBackend.Models;
-using VidlyBackend.Services;
 
 namespace VidlyBackend.Controllers
 {

@@ -2,15 +2,15 @@
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
-using VidlyBackend.Profiles;
+using DataManager.Profiles;
 
-namespace VidlyBackend.Services
+namespace DataManager.Services
 {
     public class MongoCRUD : IDatabaseContext
     {
         private readonly IMongoDatabase _db;
 
-        public MongoCRUD(IVidlyDatabaseSettings settings)
+        public MongoCRUD(IDatabaseSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
             _db = client.GetDatabase(settings.DatabaseName);

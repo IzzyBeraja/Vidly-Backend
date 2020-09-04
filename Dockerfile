@@ -1,27 +1,22 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
-WORKDIR /src/VidlyBackend.Web
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
+WORKDIR /app
+EXPOSE 80
+EXPOSE 443
 
-COPY ./src/VidlyBackend.Web/*.csproj ./
-RUN dotnet restore
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
+WORKDIR /src
+COPY ["src/VidlyBackend.Api/VidlyBackend.csproj", "src/VidlyBackend.Api/"]
+COPY ["src/VidlyBackend.DataManager/DataManager.csproj", "src/VidlyBackend.DataManager/"]
+COPY ["src/VidlyBackend.Authentication/Authentication.csproj", "src/VidlyBackend.Authentication/"]
+RUN dotnet restore "src/VidlyBackend.Api/VidlyBackend.csproj"
+COPY . .
+WORKDIR "/src/src/VidlyBackend.Api"
+RUN dotnet build "VidlyBackend.csproj" -c Release -o /app/build
 
-COPY /src/VidlyBackend.Web ./
-RUN dotnet publish -c Release -o out
+FROM build AS publish
+RUN dotnet publish "VidlyBackend.csproj" -c Release -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
-WORKDIR /src/VidlyBackend.Web
-COPY --from=build-env /src/VidlyBackend.Web/out .
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "VidlyBackend.dll"]
-
-# FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
-# WORKDIR /src/VidlyBackend.Web/app
-
-# COPY *.csproj ./
-# RUN dotnet restore
-
-# COPY . ./
-# RUN dotnet publish -c Release -o out
-
-# FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
-# WORKDIR /app
-# COPY --from=build-env /app/out .
-# ENTRYPOINT ["dotnet", "VidlyBackend.dll"]
