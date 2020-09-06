@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Claims;
 
-namespace VidlyBackend.Authentication.Models
+namespace Authenticator.Models
 {
     public interface IAuthContainerSettings
     {

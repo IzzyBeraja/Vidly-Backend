@@ -1,13 +1,13 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Authenticator.Models;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using VidlyBackend.Authentication.Models;
 
-namespace VidlyBackend.Authentication.Services
+namespace Authenticator.Services
 {
     public class JWTService : IAuthService
     {

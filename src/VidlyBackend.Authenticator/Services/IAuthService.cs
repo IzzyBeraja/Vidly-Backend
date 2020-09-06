@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace VidlyBackend.Authentication.Services
+namespace Authenticator.Services
 {
     public interface IAuthService
     {

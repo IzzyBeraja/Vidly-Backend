@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Authenticator.Services;
 using AutoMapper;
 using BCrypt.Net;
 using DataManager.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using VidlyBackend.Authentication.Services;
 using VidlyBackend.Dto;
 using VidlyBackend.Models;
 
@@ -16,7 +16,7 @@ namespace VidlyBackend.Controllers
 {
     [Route("/api/Auth")]
     [ApiController]
-    [AllowAnonymous]
+    [Authorize]
     public class TokenController : ControllerBase
     {
         private readonly IDatabaseContext _dbContext;
@@ -33,6 +33,7 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<UserReadDto>> AuthorizeUser(UserAuthDto userAuthDto)
         {
             var userFromRepo = await _dbContext.GetAsync<User>(_collectionName, nameof(Models.User.Email), userAuthDto.Email);

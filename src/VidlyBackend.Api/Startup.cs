@@ -9,12 +9,12 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Serialization;
 using DataManager.Services;
 using DataManager.Profiles;
-using VidlyBackend.Authentication.Models;
-using VidlyBackend.Authentication.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Authenticator.Attributes;
+using Authenticator.Services;
+using Authenticator.Models;
 
 namespace VidlyBackend
 {
@@ -42,23 +42,8 @@ namespace VidlyBackend
                     });
             });
 
-            services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(x =>
-            {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetValue(typeof(string), "JWT:SecretKey").ToString())),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                };
-            });
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddScheme<JwtBearerOptions, JwtAuthentication>(JwtBearerDefaults.AuthenticationScheme, null);
 
             services.Configure<DatabaseSettings>(Configuration.GetSection("MongoDB"));
             services.AddSingleton<IDatabaseSettings>(sp => sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);

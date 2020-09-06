@@ -6,9 +6,9 @@ using VidlyBackend.Models;
 using BCrypt.Net;
 using DataManager.Services;
 using System.Threading.Tasks;
-using VidlyBackend.Authentication.Services;
 using Microsoft.AspNetCore.Authorization;
 using Authenticator.Attributes;
+using Authenticator.Services;
 
 namespace VidlyBackend.Controllers
 {
@@ -31,7 +31,6 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpGet]
-        [JwtAuthentication]
         public async Task<ActionResult<IEnumerable<UserReadDto>>> Get()
         {
             var users = await _dbContext.GetAsync<User>(_collectionName);
@@ -49,6 +48,7 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<UserReadDto>> CreateUser(UserCreateDto userCreateDto)
         {
             var userFromRepo = await _dbContext.GetAsync<User>(_collectionName, nameof(Models.User.Email), userCreateDto.Email);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
 
-namespace VidlyBackend.Authentication.Models
+namespace Authenticator.Models
 {
     public class JWTContainerSettings : IAuthContainerSettings
     {
