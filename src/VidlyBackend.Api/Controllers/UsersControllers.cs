@@ -7,12 +7,14 @@ using BCrypt.Net;
 using DataManager.Services;
 using System.Threading.Tasks;
 using VidlyBackend.Authentication.Services;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Authenticator.Attributes;
 
 namespace VidlyBackend.Controllers
 {
     [ApiController]
     [Route("api/Users")]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IDatabaseContext _dbContext;
@@ -29,6 +31,7 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpGet]
+        [JwtAuthentication]
         public async Task<ActionResult<IEnumerable<UserReadDto>>> Get()
         {
             var users = await _dbContext.GetAsync<User>(_collectionName);
@@ -58,19 +61,6 @@ namespace VidlyBackend.Controllers
 
             var userReadDto = _mapper.Map<UserReadDto>(user);
             return CreatedAtRoute(nameof(GetUserById), new { id = user.Id.ToString() }, userReadDto);
-        }
-
-        [Route("~/api/Auth")]
-        [HttpPost]
-        public async Task<ActionResult<UserReadDto>> AuthorizeUser(UserAuthDto userAuthDto)
-        {
-            var userFromRepo = await _dbContext.GetAsync<User>(_collectionName, nameof(Models.User.Email), userAuthDto.Email);
-            if (userFromRepo is null || !BCrypt.Net.BCrypt.EnhancedVerify(userAuthDto.Password, userFromRepo.Password, _hashType))
-                return BadRequest("Incorrect authentication credentials.");
-
-            List<Claim> claims = new List<Claim>() { new Claim(ClaimTypes.Name, userAuthDto.Email) };
-            var token = _auth.GenerateToken(claims);
-            return Ok(token);
         }
 
         [HttpDelete("{id}")]

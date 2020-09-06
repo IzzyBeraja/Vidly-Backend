@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
-using VidlyBackend.Authentication.Models;
 
 namespace VidlyBackend.Authentication.Services
 {
