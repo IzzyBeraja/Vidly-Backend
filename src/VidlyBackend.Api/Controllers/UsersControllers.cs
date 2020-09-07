@@ -7,8 +7,8 @@ using BCrypt.Net;
 using DataManager.Services;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Authenticator.Attributes;
 using Authenticator.Services;
+using System.Security.Claims;
 
 namespace VidlyBackend.Controllers
 {
@@ -60,6 +60,14 @@ namespace VidlyBackend.Controllers
             await _dbContext.CreateAsync(_collectionName, user);
 
             var userReadDto = _mapper.Map<UserReadDto>(user);
+
+            List<Claim> jwtClaims = new List<Claim> {
+                new Claim(ClaimTypes.Name, userReadDto.Name),
+                new Claim(ClaimTypes.Email, userReadDto.Email),
+                new Claim(ClaimTypes.NameIdentifier, userReadDto.Id)
+            };
+            HttpContext.Response.Headers.Add("Authentication", _auth.GenerateToken(jwtClaims));
+
             return CreatedAtRoute(nameof(GetUserById), new { id = user.Id.ToString() }, userReadDto);
         }
 
