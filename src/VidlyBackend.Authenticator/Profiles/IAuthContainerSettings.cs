@@ -1,7 +1,4 @@
-﻿using System;
-using System.Security.Claims;
-
-namespace Authenticator.Models
+﻿namespace Authenticator.Profiles
 {
     public interface IAuthContainerSettings
     {

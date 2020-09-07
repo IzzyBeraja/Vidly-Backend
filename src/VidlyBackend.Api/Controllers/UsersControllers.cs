@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Authenticator.Services;
 using System.Security.Claims;
+using Authenticator.Models;
 
 namespace VidlyBackend.Controllers
 {
@@ -61,12 +62,8 @@ namespace VidlyBackend.Controllers
 
             var userReadDto = _mapper.Map<UserReadDto>(user);
 
-            List<Claim> jwtClaims = new List<Claim> {
-                new Claim(ClaimTypes.Name, userReadDto.Name),
-                new Claim(ClaimTypes.Email, userReadDto.Email),
-                new Claim(ClaimTypes.NameIdentifier, userReadDto.Id)
-            };
-            HttpContext.Response.Headers.Add("Authentication", _auth.GenerateToken(jwtClaims));
+            TokenModel token = new TokenModel { Email = userReadDto.Email, Name = userReadDto.Name, Id = userReadDto.Id };
+            HttpContext.Response.Headers.Add(_auth.headerName, _auth.GenerateToken(token));
 
             return CreatedAtRoute(nameof(GetUserById), new { id = user.Id.ToString() }, userReadDto);
         }

@@ -1,4 +1,6 @@
-﻿using Authenticator.Models;
+﻿using Authenticator.Handlers;
+using Authenticator.Models;
+using Authenticator.Profiles;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -11,10 +13,13 @@ namespace Authenticator.Services
 {
     public class JWTService : IAuthService
     {
+
         /// <summary>
         /// The secret key used to encrypt this token.
         /// </summary>
         private IAuthContainerSettings _settings { get; set; }
+
+        public string headerName => "Authentication";
 
         public JWTService(IAuthContainerSettings authContainerModel)
         {
@@ -34,6 +39,28 @@ namespace Authenticator.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(_settings.ExpireMinutes),
+                SigningCredentials = new SigningCredentials(GetSecurityKey(_settings.SecretKey), _settings.SecurityAlgorithm)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
+        /// <summary>
+        /// Generates an encrypted token with the given model.
+        /// </summary>
+        /// <param name="model"></param>
+        public string GenerateToken(TokenModel tokenModel)
+        {
+            if (tokenModel is null || tokenModel.IsEmpty)
+                throw new ArgumentException("Provided arguments for token creation are invalid.");
+
+            var claimsBuilder = new ClaimsBuilder();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claimsBuilder.GetClaims(tokenModel)),
                 Expires = DateTime.UtcNow.AddMinutes(_settings.ExpireMinutes),
                 SigningCredentials = new SigningCredentials(GetSecurityKey(_settings.SecretKey), _settings.SecurityAlgorithm)
             };

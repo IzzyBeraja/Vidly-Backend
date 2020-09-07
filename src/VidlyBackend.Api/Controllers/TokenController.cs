@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
+using Authenticator.Models;
 using Authenticator.Services;
-using AutoMapper;
 using BCrypt.Net;
 using DataManager.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -20,15 +19,13 @@ namespace VidlyBackend.Controllers
     public class TokenController : ControllerBase
     {
         private readonly IDatabaseContext _dbContext;
-        private readonly IMapper _mapper;
         private string _collectionName = "users";
         private HashType _hashType = HashType.SHA384;
         private readonly IAuthService _auth;
 
-        public TokenController(IDatabaseContext dbContext, IMapper mapper, IAuthService auth)
+        public TokenController(IDatabaseContext dbContext, IAuthService auth)
         {
             _dbContext = dbContext;
-            _mapper = mapper;
             _auth = auth;
         }
 
@@ -40,9 +37,10 @@ namespace VidlyBackend.Controllers
             if (userFromRepo is null || !BCrypt.Net.BCrypt.EnhancedVerify(userAuthDto.Password, userFromRepo.Password, _hashType))
                 return BadRequest("Incorrect authentication credentials.");
 
-            List<Claim> claims = new List<Claim>() { new Claim(ClaimTypes.Name, userAuthDto.Email) };
-            var token = _auth.GenerateToken(claims);
-            return Ok(token);
+            TokenModel tokenModel = new TokenModel { Email = userAuthDto.Email };
+            var token = _auth.GenerateToken(tokenModel);
+            Request.Headers.Add(_auth.headerName, token);
+            return Ok("Login Successful");
         }
     }
 }

@@ -10,11 +10,8 @@ using Newtonsoft.Json.Serialization;
 using DataManager.Services;
 using DataManager.Profiles;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Authenticator.Attributes;
 using Authenticator.Services;
-using Authenticator.Models;
+using Authenticator.Profiles;
 
 namespace VidlyBackend
 {
@@ -27,12 +24,11 @@ namespace VidlyBackend
 
         public IConfiguration Configuration { get; }
 
-        string MyAllowSpecificOrigins = "MyAllowSpecificOrigins";
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors(options =>
             {
-                options.AddPolicy(name: MyAllowSpecificOrigins,
+                options.AddPolicy(name: Configuration.GetValue<string>("AllowSpecificOrigins"),
                     builder =>
                     {
                         builder.WithOrigins("https://localhost")
@@ -73,7 +69,7 @@ namespace VidlyBackend
 
             app.UseRouting();
 
-            app.UseCors(MyAllowSpecificOrigins);
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();
