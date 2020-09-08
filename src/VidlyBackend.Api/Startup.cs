@@ -69,7 +69,7 @@ namespace VidlyBackend
 
             app.UseRouting();
 
-            app.UseCors();
+            app.UseCors(Configuration.GetValue<string>("AllowSpecificOrigins"));
 
             app.UseAuthentication();
             app.UseAuthorization();

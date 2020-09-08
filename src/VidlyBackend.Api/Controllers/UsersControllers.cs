@@ -63,7 +63,8 @@ namespace VidlyBackend.Controllers
             var userReadDto = _mapper.Map<UserReadDto>(user);
 
             TokenModel token = new TokenModel { Email = userReadDto.Email, Name = userReadDto.Name, Id = userReadDto.Id };
-            HttpContext.Response.Headers.Add(_auth.headerName, _auth.GenerateToken(token));
+            Response.Headers.Add(_auth.HeaderName, _auth.GenerateToken(token));
+            Response.Headers.Add("access-control-expose-headers", _auth.HeaderName);
 
             return CreatedAtRoute(nameof(GetUserById), new { id = user.Id.ToString() }, userReadDto);
         }

@@ -30,16 +30,16 @@ namespace Authenticator.Services
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            if (!Request.Headers.ContainsKey("Authorization"))
-                return AuthenticateResult.Fail("Request does not contain header: 'Authentication'");
+            if (!Request.Headers.ContainsKey(_authService.HeaderName))
+                return AuthenticateResult.Fail($"Request does not contain header: '{_authService.HeaderName}'");
 
-            string token = Request.Headers["Authorization"];
+            string token = Request.Headers[_authService.HeaderName];
             if (string.IsNullOrEmpty(token))
                 return AuthenticateResult.Fail("Authorization header contains no data");
 
             try
             {
-                return validateToken(token);
+                return ValidateToken(token);
             }
             catch (Exception ex)
             {
@@ -47,7 +47,7 @@ namespace Authenticator.Services
             }
         }
 
-        private AuthenticateResult validateToken(string token)
+        private AuthenticateResult ValidateToken(string token)
         {
             var claims = _authService.GetTokenClaims(token);
             var identity = new ClaimsIdentity(claims, Scheme.Name);

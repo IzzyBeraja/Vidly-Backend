@@ -19,7 +19,7 @@ namespace Authenticator.Services
         /// </summary>
         private IAuthContainerSettings _settings { get; set; }
 
-        public string headerName => "Authentication";
+        public string HeaderName => "x-auth-token";
 
         public JWTService(IAuthContainerSettings authContainerModel)
         {

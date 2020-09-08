@@ -6,7 +6,7 @@ namespace Authenticator.Services
 {
     public interface IAuthService
     {
-        string headerName { get; }
+        string HeaderName { get; }
         bool TryGetTokenClaims(string token, out IEnumerable<Claim> claims);
         string GenerateToken(IEnumerable<Claim> claims);
         string GenerateToken(TokenModel claims);

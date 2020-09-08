@@ -37,9 +37,10 @@ namespace VidlyBackend.Controllers
             if (userFromRepo is null || !BCrypt.Net.BCrypt.EnhancedVerify(userAuthDto.Password, userFromRepo.Password, _hashType))
                 return BadRequest("Incorrect authentication credentials.");
 
-            TokenModel tokenModel = new TokenModel { Email = userAuthDto.Email };
+            TokenModel tokenModel = new TokenModel { Email = userFromRepo.Email, Name = userFromRepo.Name, Id = userFromRepo.Id };
             var token = _auth.GenerateToken(tokenModel);
-            Request.Headers.Add(_auth.headerName, token);
+            Response.Headers.Add(_auth.HeaderName, token);
+            Response.Headers.Add("access-control-expose-headers", _auth.HeaderName);
             return Ok("Login Successful");
         }
     }
