@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Authenticator.Services;
 using AutoMapper;
 using DataManager.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using VidlyBackend.Dto;
@@ -11,19 +13,23 @@ namespace VidlyBackend.Controllers
 {
     [ApiController]
     [Route("api/Movies")]
+    [Authorize]
     public class MoviesController : ControllerBase
     {
         private readonly IDatabaseContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly IAuthService _auth;
         private string _collectionName = "movies"; // appSettings
 
-        public MoviesController(IDatabaseContext dbContext, IMapper mapper)
+        public MoviesController(IDatabaseContext dbContext, IMapper mapper, IAuthService auth)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _auth = auth;
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<MovieReadDto>>> Get()
         {
             var movies = await _dbContext.GetAsync<Movie>(_collectionName);
@@ -31,6 +37,7 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpGet("{id}", Name = "GetMovieById")]
+        [AllowAnonymous]
         public async Task<ActionResult<MovieReadDto>> GetMovieById(string id)
         {
             var movie = await _dbContext.GetAsync<Movie>(_collectionName, id);
@@ -84,7 +91,7 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteMovie<Movie>(string id)
+        public async Task<ActionResult> DeleteMovie1<Movie>(string id)
         {
             var movieFromRepo = await _dbContext.GetAsync<Movie>(_collectionName, id);
             if (movieFromRepo is null)

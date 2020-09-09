@@ -34,8 +34,8 @@ namespace Authenticator.Services
                 return AuthenticateResult.Fail($"Request does not contain header: '{_authService.HeaderName}'");
 
             string token = Request.Headers[_authService.HeaderName];
-            if (string.IsNullOrEmpty(token))
-                return AuthenticateResult.Fail("Authorization header contains no data");
+            if (string.IsNullOrEmpty(token) || token == "null")
+                return AuthenticateResult.Fail($"'{_authService.HeaderName}' header contains no data or is \"null\"");
 
             try
             {

@@ -28,5 +28,13 @@ namespace Authenticator.Handlers
             claim = new Claim(claimType, value);
             return true;
         }
+
+        //public TokenModel GetTokenModel(IEnumerable<Claim> claims)
+        //{
+        //    foreach(var claim in claims)
+        //    {
+        //        claim
+        //    }
+        //}
     }
 }

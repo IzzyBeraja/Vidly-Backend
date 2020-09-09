@@ -17,7 +17,7 @@ namespace Authenticator.Services
         /// <summary>
         /// The secret key used to encrypt this token.
         /// </summary>
-        private IAuthContainerSettings _settings { get; set; }
+        private IAuthContainerSettings _settings;
 
         public string HeaderName => "x-auth-token";
 

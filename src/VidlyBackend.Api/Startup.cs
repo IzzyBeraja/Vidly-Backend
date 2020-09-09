@@ -26,15 +26,12 @@ namespace VidlyBackend
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options =>
-            {
+            services.AddCors(options => {
                 options.AddPolicy(name: Configuration.GetValue<string>("AllowSpecificOrigins"),
-                    builder =>
-                    {
-                        builder.WithOrigins("https://localhost")
-                                            .AllowAnyHeader()
-                                            .AllowAnyMethod()
-                                            .AllowAnyOrigin();
+                    builder => {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
                     });
             });
 
