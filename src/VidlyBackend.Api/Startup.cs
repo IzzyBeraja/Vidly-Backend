@@ -24,28 +24,30 @@ namespace VidlyBackend
 
         public IConfiguration Configuration { get; }
 
+        private readonly string _corsPolicy = "CorsPolicy";
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors(options => {
-                options.AddPolicy(name: Configuration.GetValue<string>("AllowSpecificOrigins"),
+                options.AddPolicy(name: _corsPolicy,
                     builder => {
-                        builder.AllowAnyOrigin()
-                               .AllowAnyHeader()
-                               .AllowAnyMethod();
+                        builder.WithOrigins("https://localhost")
+                               .AllowAnyOrigin()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
                     });
             });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddScheme<JwtBearerOptions, JwtAuthentication>(JwtBearerDefaults.AuthenticationScheme, null);
 
-            services.Configure<DatabaseSettings>(Configuration.GetSection("MongoDB"));
-            services.AddSingleton<IDatabaseSettings>(sp => sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
-
             services.Configure<JWTContainerSettings>(Configuration.GetSection("JWT"));
             services.AddSingleton<IAuthContainerSettings>(sp => sp.GetRequiredService<IOptions<JWTContainerSettings>>().Value);
 
-            services.AddControllers().AddNewtonsoftJson(s =>
-            {
+            services.Configure<DatabaseSettings>(Configuration.GetSection("MongoDB"));
+            services.AddSingleton<IDatabaseSettings>(sp => sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
+
+            services.AddControllers().AddNewtonsoftJson(s => {
                 s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
@@ -66,7 +68,7 @@ namespace VidlyBackend
 
             app.UseRouting();
 
-            app.UseCors(Configuration.GetValue<string>("AllowSpecificOrigins"));
+            app.UseCors(_corsPolicy);
 
             app.UseAuthentication();
             app.UseAuthorization();

@@ -8,7 +8,6 @@ using DataManager.Services;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Authenticator.Services;
-using System.Security.Claims;
 using Authenticator.Models;
 
 namespace VidlyBackend.Controllers
@@ -70,7 +69,7 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteUser<User>(string id)
+        public async Task<ActionResult> DeleteUser(string id)
         {
             var user = await _dbContext.GetAsync<User>(_collectionName, id);
             if (user is null)
