@@ -9,6 +9,20 @@ As I progress with my React application, I will be increasing the features of
 this application as well to compliment it. There are tons of things that still
 need implementing!
 
+## Things to do for next update
+
+ - Create a relationship between Genre and Movie
+ - Streamline controllers as they are getting bulky
+	- Create a more robust DataManager library and move controller actions there
+ - Github actions to upload to AWS or a free service
+
+## Recent Additions as of 9/9/20
+
+ - Custom JWT Authentication with token builder mappings
+ - Roles Authorization
+ - Login handling is a go
+ - Reorganized everything to make a bit more sense
+
 ## Recent Additions as of 9/4/20
 
 - Localhost HTTPS certificate
@@ -23,12 +37,9 @@ need implementing!
 
 ## ToDo
 
-- InsertMany
-- Create relationship between genre and movie
-  - Only allow movies to be added with already valid genreIds
-- JWT authentication
-- Login handling
-- Create a more streamlined controller setup
-  - Currently the genre and movie controllers have similar implementations but
-    should be generic
 - Learning envoy for microservices
+- Docker environment variables
+- Business logic layer
+- Try to decouple as much as I can
+- Remake the way claims are built as it's a little silly (Reflection with foreach?)
+- Move password validation and creation to a different library
