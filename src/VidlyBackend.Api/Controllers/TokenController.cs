@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Authenticator.Models;
 using Authenticator.Services;
+using AutoMapper;
 using BCrypt.Net;
 using DataManager.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -22,10 +23,12 @@ namespace VidlyBackend.Controllers
         private string _collectionName = "users";
         private HashType _hashType = HashType.SHA384;
         private readonly IAuthService _auth;
+        private readonly IMapper _mapper;
 
-        public TokenController(IDatabaseContext dbContext, IAuthService auth)
+        public TokenController(IDatabaseContext dbContext, IMapper mapper, IAuthService auth)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
             _auth = auth;
         }
 
@@ -37,7 +40,7 @@ namespace VidlyBackend.Controllers
             if (userFromRepo is null || !BCrypt.Net.BCrypt.EnhancedVerify(userAuthDto.Password, userFromRepo.Password, _hashType))
                 return BadRequest("Incorrect authentication credentials.");
 
-            TokenModel tokenModel = new TokenModel { Email = userFromRepo.Email, Name = userFromRepo.Name, Id = userFromRepo.Id };
+            var tokenModel = _mapper.Map<TokenModel>(userFromRepo);
             var token = _auth.GenerateToken(tokenModel);
             Response.Headers.Add(_auth.HeaderName, token);
             Response.Headers.Add("access-control-expose-headers", _auth.HeaderName);

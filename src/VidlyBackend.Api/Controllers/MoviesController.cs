@@ -91,6 +91,7 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> DeleteMovie(string id)
         {
             var movieFromRepo = await _dbContext.GetAsync<Movie>(_collectionName, id);

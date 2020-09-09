@@ -16,6 +16,7 @@ namespace Authenticator.Handlers
             if (BuildClaim(ClaimTypes.Email, tokenModel.Email, out Claim claim)) claims.Add(claim);
             if (BuildClaim(ClaimTypes.Name, tokenModel.Name, out claim)) claims.Add(claim);
             if (BuildClaim(ClaimTypes.NameIdentifier, tokenModel.Id, out claim)) claims.Add(claim);
+            if (BuildClaim(ClaimTypes.Role, tokenModel.Role, out claim)) claims.Add(claim);
             return claims;
         }
 

@@ -56,12 +56,14 @@ namespace VidlyBackend.Controllers
                 return BadRequest("User is already registered.");
 
             var user = _mapper.Map<User>(userCreateDto);
+
             user.Password = BCrypt.Net.BCrypt.EnhancedHashPassword(user.Password, _hashType);
+            user.Role = "Customer";
             await _dbContext.CreateAsync(_collectionName, user);
 
             var userReadDto = _mapper.Map<UserReadDto>(user);
 
-            TokenModel token = new TokenModel { Email = userReadDto.Email, Name = userReadDto.Name, Id = userReadDto.Id };
+            var token = _mapper.Map<TokenModel>(userReadDto);
             Response.Headers.Add(_auth.HeaderName, _auth.GenerateToken(token));
             Response.Headers.Add("access-control-expose-headers", _auth.HeaderName);
 
@@ -69,6 +71,7 @@ namespace VidlyBackend.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> DeleteUser(string id)
         {
             var user = await _dbContext.GetAsync<User>(_collectionName, id);

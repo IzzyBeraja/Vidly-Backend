@@ -10,6 +10,7 @@ namespace Authenticator.Models
         public string Email { get; set; }
         public string Name { get; set; }
         public string Id { get; set; }
+        public string Role { get; set; }
         public bool IsEmpty => Email is null && Name is null && Id is null;
     }
 }

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Authenticator.Models;
+using AutoMapper;
 using VidlyBackend.Dto;
 using VidlyBackend.Models;
 
@@ -22,6 +23,8 @@ namespace VidlyBackend.Profiles
             // Users
             CreateMap<User, UserReadDto>();
             CreateMap<UserCreateDto, User>();
+            CreateMap<User, TokenModel>();
+            CreateMap<UserReadDto, TokenModel>();
         }
     }
 }
