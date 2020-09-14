@@ -6,7 +6,8 @@
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <UserSecretsId>197a18e8-5ffb-4d57-9f7f-d063673cc2c4</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..\..</DockerfileContext>
+    <DockerfileContext>.</DockerfileContext>
+    <DockerfileFile>..\..\Dockerfile</DockerfileFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.0.1" />
