@@ -9,8 +9,17 @@ As I progress with my React application, I will be increasing the features of
 this application as well to compliment it. There are tons of things that still
 need implementing!
 
+I currently have this container hosted on DockerHub! Will be adding more
+features soon! 😁
+
 ## Things to do for next update
 
+I got a bit stuck in docker environment variables and went down a rabit hole of
+different secret management solutions. Ended up starting a fresh course on
+Docker to get a better understanding of how to host and deploy my containers.
+ 
+ - Docker environment variables
+ - Proper SSL certificate handling (Kestrel certificates with dotnet are a pain 😡)
  - Create a relationship between Genre and Movie
  - Streamline controllers as they are getting bulky
 	- Create a more robust DataManager library and move controller actions there
@@ -38,7 +47,6 @@ need implementing!
 ## ToDo
 
 - Learning envoy for microservices
-- Docker environment variables
 - Business logic layer
 - Try to decouple as much as I can
 - Remake the way claims are built as it's a little silly (Reflection with foreach?)
